@@ -54,7 +54,7 @@ intensity = data  # The data is in K km/s
 ### 3. Convert Intensity to Flux Density
 
 ```python
-conversion_factor = 7.0e-6  # K km/s to erg/s/cm²/sr
+conversion_factor = 7.0e-6  # K km/s to erg/s/cm²/sr is from [Goicoechea et al. 2015](https://iopscience.iop.org/article/10.1088/0004-637X/812/1/75/pdf)
 flux_density_erg = intensity * conversion_factor  # Now in erg/s/cm²/sr
 ```
 
