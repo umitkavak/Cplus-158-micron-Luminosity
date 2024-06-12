@@ -3,50 +3,44 @@
 from astropy.io import fits
 from astropy import units as u
 import numpy as np
-from astropy.coordinates import Angle
-
 
 # Open FITS file
-hdu_list = fits.open('NGC7538_CII_subcube.fits')
+hdu_list = fits.open('NGC7538_CII_moment0_small.fits')
 data = hdu_list[0].data
 header = hdu_list[0].header
 
-# Check for NaN values in the data and handle them
-intensity = np.nan_to_num(data)  # Convert NaNs to zero
+# Extract intensity (Data is in K km/s)
+intensity = data  # Replace with correct data extraction if necessary
 
-# Extract frequency axis information
-frequency = header['CRVAL3'] + np.arange(header['NAXIS3']) * header['CDELT3']  # Frequency axis
-pixel_area_sr = (Angle(header['CDELT1'], unit='deg').rad * Angle(header['CDELT2'], unit='deg').rad)  # Convert to steradians
+# Convert intensity to flux density in erg/s/cm²/sr using the conversion factor
+conversion_factor = 7.0e-6  # K km/s to erg/s/cm²/sr from Goicoechea et al. 2015
+flux_density_erg = intensity * conversion_factor  # Now in erg/s/cm²/sr
 
-# Integrate intensity over the frequency axis to get flux density
-flux_density = np.nansum(intensity, axis=0)  # Summing over the frequency axis
+# Convert flux density to W/m²/sr (to apply 1e-3)
+flux_density_wm2_sr = (flux_density_erg * u.erg / (u.s * u.cm**2 * u.sr)).to(u.W / (u.m**2 * u.sr)) 
 
-# Calculate the total flux (flux density * pixel area in steradians)
-total_flux = np.nansum(flux_density * pixel_area_sr)
+# Check for NaN or infinite values
+flux_density_wm2_sr = np.nan_to_num(flux_density_wm2_sr)
 
-# Debugging output for flux
-print(f"Total Flux: {total_flux}")
+# Beam area in deg²
+beam_area_deg2 = (header['BMAJ'] * header['BMIN'] * (np.pi / (4 * np.log(2)))) * u.deg**2
+# Convert beam area to steradians
+beam_area_sr = beam_area_deg2.to(u.sr)
 
-# Convert total flux to luminosity
-distance = 2.65 * 10**3 * u.pc  # Distance to NGC 7538 in parsecs
-distance_cm = distance.to(u.cm).value  # Convert parsecs to cm
+# Sum flux density over all pixels to get total flux density in W/m²/sr
+total_flux_density_sr = np.sum(flux_density_wm2_sr)
 
-# Ensure total_flux is positive
-if total_flux <= 0:
-	print("Total flux is zero or negative. Please check the intensity values.")
-	hdu_list.close()
-	exit()
-	
-luminosity = total_flux * 4 * np.pi * distance_cm**2  # in erg/s
+# Total flux in W/m²
+total_flux_wm2 = total_flux_density_sr * beam_area_sr
 
-# Convert luminosity from erg/s to watts
-luminosity_watts = luminosity * 1e-7
+# Calculate [C II] Luminosity in Watts
+distance = 2.65 * 10**3 * u.parsec  # Distance to NGC 7538
+luminosity_watts = total_flux_wm2 * 4 * np.pi * (distance.to(u.m))**2  # Luminosity in Watts
+#print('[C II] Luminosity in Watt:',luminosity_watts)
 
-# Convert watts to solar luminosities (1 L_sun = 3.828 x 10^26 W)
-solar_luminosity = luminosity_watts / (3.828 * 10**26)
+# Convert to solar luminosities
+solar_luminosity = 3.828 * 10**26 * u.W  # Solar luminosity in Watts
+luminosity_solar = luminosity_watts / solar_luminosity
 
-# Print the result
-print(f'[C II] Luminosity: {solar_luminosity:.2e} L_sun')
-
-# Close the FITS file
-hdu_list.close()
+# Print the [C II] Luminosity in solar luminosities
+print(f'[C II] Luminosity: {luminosity_solar.to(u.dimensionless_unscaled)} L_sun')
