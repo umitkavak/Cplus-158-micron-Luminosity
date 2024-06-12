@@ -123,7 +123,7 @@ python Cplus_luminosity.py
 
 ## References
 
-- Goicoechea et al. 2015: [Conversion factor reference]
+- [Goicoechea et al. 2015](https://iopscience.iop.org/article/10.1088/0004-637X/812/1/75/pdf)
 - Astropy Documentation: [https://docs.astropy.org/]
 
 ## License
