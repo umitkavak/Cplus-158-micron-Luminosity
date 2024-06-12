@@ -1,7 +1,7 @@
 
 # [C II] Luminosity Calculation for NGC 7538
 
-This repository contains a Python script to calculate the [C II] luminosity of the NGC 7538 region using data from a FITS file. The script performs unit conversions, handles the data, and calculates the luminosity in both Watts and solar luminosities.
+This repository contains a Python script to calculate the [C II] (at 158 micron) luminosity of the NGC 7538 region using data from a FITS file. The script performs unit conversions, handles the data, and calculates the luminosity in both Watts and solar luminosities.
 
 ## Requirements
 
@@ -38,7 +38,7 @@ The script `Cplus_luminosity.py` performs the following steps:
 from astropy.io import fits
 
 # Open the FITS file
-hdu_list = fits.open('NGC7538_CII_moment0_small.fits')
+hdu_list = fits.open('NGC7538_CII_moment0_small.fits') #SOFIA 158 micron observation map
 data = hdu_list[0].data
 header = hdu_list[0].header
 ```
